@@ -332,3 +332,43 @@ setSanta("santa-idle.png");
 captions.textContent = "";
 updateProgress();
 nextBtn.disabled = true;
+
+/* ===============================
+   SNOWFALL
+   =============================== */
+
+function createSnowflakes() {
+  const snowContainer = document.getElementById("snow-container");
+  if (!snowContainer) return;
+  
+  const snowflakeCount = 50; // Number of snowflakes
+  const snowflakeSymbols = ['❄', '❅', '❆', '•'];
+  
+  for (let i = 0; i < snowflakeCount; i++) {
+    const snowflake = document.createElement("div");
+    snowflake.className = "snowflake";
+    snowflake.textContent = snowflakeSymbols[Math.floor(Math.random() * snowflakeSymbols.length)];
+    
+    // Random starting position
+    snowflake.style.left = Math.random() * 100 + "%";
+    
+    // Random size between 0.8em and 1.5em
+    const size = 0.8 + Math.random() * 0.7;
+    snowflake.style.fontSize = size + "em";
+    
+    // Random animation duration between 10s and 20s for variety
+    const duration = 10 + Math.random() * 10;
+    snowflake.style.animationDuration = duration + "s";
+    
+    // Random delay so they don't all start at once
+    snowflake.style.animationDelay = Math.random() * 5 + "s";
+    
+    // Random horizontal drift
+    const drift = -30 + Math.random() * 60;
+    snowflake.style.setProperty('--drift', drift + 'px');
+    
+    snowContainer.appendChild(snowflake);
+  }
+}
+
+createSnowflakes();

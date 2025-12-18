@@ -46,6 +46,8 @@ and remember — wherever your gift ends up, that's exactly where Santa intended
 Now… let's begin!
 Ho ho ho ho ho!`;
 
+const finalCaption = `Ho Ho Ho! Merry Christmas to the IT Section! You have all been good little boys and girls this year, and my chief elf, Aaron says you all deserve a heartfelt thank you for all of the jolly things you did this year! Ho Ho Ho! Here is to a new and exciting year twenty twentysix! Ho Ho Ho!`;
+
 const segmentCaptions = [
 "",
 "It was a snowy Christmas Eve at Tech Tinsel Inc., and the IT department was almost done for the year until the entire building’s network suddenly went RIGHT down. Pass it RIGHT.",
@@ -296,7 +298,7 @@ function nextSegment() {
     
     playAudio(
       "final.mp3",
-      "final.mp3",
+      finalCaption,
       () => {
         // After final.mp3 ends, resume background jingle
         backgroundJingle.currentTime = 0;

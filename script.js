@@ -86,7 +86,9 @@ let animTimer = null;
 let currentAnimationType = null; // 'talking' | 'laughing' | null
 
 function setSanta(cls) {
-  santa.className = cls;
+  if (santa) {
+    santa.className = cls;
+  }
 }
 
 // Random delay between 100ms and 300ms for natural speaking animation
@@ -95,13 +97,16 @@ function getRandomDelay() {
 }
 
 function startTalking() {
+  if (!santa) return;
   stopAnim();
   currentAnimationType = 'talking';
   let open = false;
   
   function toggleMouth() {
+    if (currentAnimationType !== 'talking') return; // Safety check
     open = !open;
-    setSanta(open ? "santa-talk" : "santa-idle");
+    const className = open ? "santa-talk" : "santa-idle";
+    setSanta(className);
     
     if (currentAnimationType === 'talking') {
       const delay = getRandomDelay();
@@ -109,16 +114,20 @@ function startTalking() {
     }
   }
   
-  // Start with a random initial delay
-  animTimer = setTimeout(toggleMouth, getRandomDelay());
+  // Start immediately with first frame, then toggle
+  setSanta("santa-idle");
+  // Start animation immediately with a short delay
+  animTimer = setTimeout(toggleMouth, 150);
 }
 
 function startLaughing() {
+  if (!santa) return;
   stopAnim();
   currentAnimationType = 'laughing';
   let frame1 = true;
   
   function toggleLaugh() {
+    if (currentAnimationType !== 'laughing') return; // Safety check
     frame1 = !frame1;
     setSanta(frame1 ? "santa-laugh1" : "santa-laugh2");
     
@@ -159,18 +168,45 @@ function playAudio(src, captionText, onEnd, animationType = 'talking') {
   captions.textContent = captionText;
   audio.src = src;
 
-  audio.play().then(() => {
-    playing = true;
-    paused = false;
-    
-    // Determine animation type based on filename or parameter
-    const isHohoho = src.includes('hohoho.mp3') || src.endsWith('hohoho.mp3');
+  // Determine animation type based on filename or parameter
+  const isHohoho = src.includes('hohoho.mp3') || src.endsWith('hohoho.mp3');
+  
+  // Function to start the appropriate animation
+  function startAnimation() {
     if (isHohoho || animationType === 'laughing') {
       startLaughing();
     } else {
       startTalking();
     }
+  }
+  
+  // Start animation immediately (don't wait for audio to play)
+  startAnimation();
+  
+  audio.play().then(() => {
+    playing = true;
+    paused = false;
+    // Ensure animation is running
+    if (currentAnimationType === null) {
+      startAnimation();
+    }
+  }).catch((error) => {
+    console.error('Audio play error:', error);
+    // Even if audio fails, keep animation running if user interaction occurred
+    playing = true;
+    paused = false;
+    if (currentAnimationType === null) {
+      startAnimation();
+    }
   });
+
+  // Also ensure animation on play event
+  const playHandler = () => {
+    if (currentAnimationType === null) {
+      startAnimation();
+    }
+  };
+  audio.addEventListener('play', playHandler, { once: true });
 
   audio.onended = () => {
     playing = false;
@@ -224,7 +260,17 @@ function playSegment() {
 }
 
 function nextSegment() {
-  if (mode === "ready") {
+  // Allow skipping intro to go directly to first segment
+  if (mode === "intro" || mode === "ready") {
+    // Stop intro audio if playing
+    if (playing) {
+      audio.pause();
+      audio.currentTime = 0;
+      stopAnim();
+      playing = false;
+      paused = false;
+      captions.textContent = "";
+    }
     mode = "segment";
     currentSegment = 1;
     playSegment();

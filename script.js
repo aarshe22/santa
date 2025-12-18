@@ -20,7 +20,29 @@ const progressBar = document.getElementById("progressBar");
    INTRO + FULL DIALOG (UNCHANGED)
    =============================== */
 
-const introCaption = `Ho ho ho! Merry Christmas everyone! Now listen up, my festive friends, because Santa has a very important mission for you tonight. You’re about to play the legendary Left-Right Christmas Gift Shuffle. When you hear me finish a story segment, you will pass your gift exactly one time. If I say LEFT, you pass your gift to the left. If I say RIGHT, you pass your gift to the right. No skipping, no peeking, and no holding on tighter than a reindeer on a rooftop! Now… let’s begin! Ho ho ho ho ho!`;
+const introCaption = `Ho ho ho! Merry Christmas everyone!
+
+Now listen up, my festive friends, because Santa has a very important mission for you tonight.
+You're about to play the legendary Left-Right Christmas Gift Shuffle.
+
+Here's how it works.
+When you hear me finish a story segment, you will pass your gift exactly one time.
+If I say LEFT, you pass your gift to the left.
+If I say RIGHT, you pass your gift to the right.
+No skipping, no peeking, and no holding on tighter than a reindeer on a rooftop!
+
+Now I see some familiar faces here.
+Aaron, you look like someone who reads the instructions carefully… most of the time.
+Mike, remember — this is not a race, even if the gift looks good.
+Kat, I know you're paying attention… Santa always knows.
+Mark, absolutely no testing experimental features during the game.
+Joseph, if something breaks, we all know who Santa is calling.
+
+Most importantly, everyone keep your hands moving, your spirits high,
+and remember — wherever your gift ends up, that's exactly where Santa intended it to be.
+
+Now… let's begin!
+Ho ho ho ho ho!`;
 
 const segmentCaptions = [
 "",
@@ -57,27 +79,71 @@ const segmentCaptions = [
 ];
 
 /* ===============================
-   SANTA ANIMATION (FIXED)
+   SANTA ANIMATION
    =============================== */
 
 let animTimer = null;
+let currentAnimationType = null; // 'talking' | 'laughing' | null
 
 function setSanta(cls) {
   santa.className = cls;
 }
 
+// Random delay between 100ms and 300ms for natural speaking animation
+function getRandomDelay() {
+  return 100 + Math.random() * 200;
+}
+
 function startTalking() {
   stopAnim();
+  currentAnimationType = 'talking';
   let open = false;
-  animTimer = setInterval(() => {
+  
+  function toggleMouth() {
     open = !open;
     setSanta(open ? "santa-talk" : "santa-idle");
-  }, 200);
+    
+    if (currentAnimationType === 'talking') {
+      const delay = getRandomDelay();
+      animTimer = setTimeout(toggleMouth, delay);
+    }
+  }
+  
+  // Start with a random initial delay
+  animTimer = setTimeout(toggleMouth, getRandomDelay());
+}
+
+function startLaughing() {
+  stopAnim();
+  currentAnimationType = 'laughing';
+  let frame1 = true;
+  
+  function toggleLaugh() {
+    frame1 = !frame1;
+    setSanta(frame1 ? "santa-laugh1" : "santa-laugh2");
+    
+    if (currentAnimationType === 'laughing') {
+      // Laugh animation alternates faster, between 150ms and 250ms
+      const delay = 150 + Math.random() * 100;
+      animTimer = setTimeout(toggleLaugh, delay);
+    }
+  }
+  
+  // Start with first laugh frame
+  setSanta("santa-laugh1");
+  animTimer = setTimeout(toggleLaugh, 150 + Math.random() * 100);
 }
 
 function stopAnim() {
-  if (animTimer) clearInterval(animTimer);
+  if (animTimer) {
+    if (typeof animTimer === 'number') {
+      clearTimeout(animTimer);
+    } else {
+      clearInterval(animTimer);
+    }
+  }
   animTimer = null;
+  currentAnimationType = null;
   setSanta("santa-idle");
 }
 
@@ -85,7 +151,7 @@ function stopAnim() {
    AUDIO (FIXED)
    =============================== */
 
-function playAudio(src, captionText, onEnd) {
+function playAudio(src, captionText, onEnd, animationType = 'talking') {
   audio.pause();
   audio.currentTime = 0;
   audio.onended = null;
@@ -96,7 +162,14 @@ function playAudio(src, captionText, onEnd) {
   audio.play().then(() => {
     playing = true;
     paused = false;
-    startTalking();
+    
+    // Determine animation type based on filename or parameter
+    const isHohoho = src.includes('hohoho.mp3') || src.endsWith('hohoho.mp3');
+    if (isHohoho || animationType === 'laughing') {
+      startLaughing();
+    } else {
+      startTalking();
+    }
   });
 
   audio.onended = () => {
@@ -117,7 +190,13 @@ function pauseToggle() {
     status.textContent = "⏸️ Paused";
   } else {
     audio.play();
-    startTalking();
+    // Resume the appropriate animation based on current audio
+    const isHohoho = audio.src.includes('hohoho.mp3') || audio.src.endsWith('hohoho.mp3');
+    if (isHohoho) {
+      startLaughing();
+    } else {
+      startTalking();
+    }
     paused = false;
     status.textContent = "▶️ Playing";
   }

@@ -85,9 +85,12 @@ const segmentCaptions = [
 let animTimer = null;
 let currentAnimationType = null; // 'talking' | 'laughing' | null
 
-function setSanta(cls) {
-  if (santa) {
-    santa.className = cls;
+function setSanta(imageName) {
+  if (santa && santa.tagName === 'IMG') {
+    santa.src = imageName;
+  } else if (santa) {
+    // Fallback: if it's still a div, use className (sprite approach)
+    santa.className = imageName;
   }
 }
 
@@ -105,8 +108,8 @@ function startTalking() {
   function toggleMouth() {
     if (currentAnimationType !== 'talking') return; // Safety check
     open = !open;
-    const className = open ? "santa-talk" : "santa-idle";
-    setSanta(className);
+    const imageName = open ? "santa-talk.png" : "santa-idle.png";
+    setSanta(imageName);
     
     if (currentAnimationType === 'talking') {
       const delay = getRandomDelay();
@@ -115,7 +118,7 @@ function startTalking() {
   }
   
   // Start immediately with first frame, then toggle
-  setSanta("santa-idle");
+  setSanta("santa-idle.png");
   // Start animation immediately with a short delay
   animTimer = setTimeout(toggleMouth, 150);
 }
@@ -129,7 +132,7 @@ function startLaughing() {
   function toggleLaugh() {
     if (currentAnimationType !== 'laughing') return; // Safety check
     frame1 = !frame1;
-    setSanta(frame1 ? "santa-laugh1" : "santa-laugh2");
+    setSanta(frame1 ? "santa-laugh1.png" : "santa-laugh2.png");
     
     if (currentAnimationType === 'laughing') {
       // Laugh animation alternates faster, between 150ms and 250ms
@@ -139,7 +142,7 @@ function startLaughing() {
   }
   
   // Start with first laugh frame
-  setSanta("santa-laugh1");
+  setSanta("santa-laugh1.png");
   animTimer = setTimeout(toggleLaugh, 150 + Math.random() * 100);
 }
 
@@ -153,7 +156,7 @@ function stopAnim() {
   }
   animTimer = null;
   currentAnimationType = null;
-  setSanta("santa-idle");
+  setSanta("santa-idle.png");
 }
 
 /* ===============================
@@ -325,7 +328,7 @@ document.addEventListener("keydown", e => {
    INIT
    =============================== */
 
-setSanta("santa-idle");
+setSanta("santa-idle.png");
 captions.textContent = "";
 updateProgress();
 nextBtn.disabled = true;

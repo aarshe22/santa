@@ -4,7 +4,7 @@ let currentSegment = 0;
 let started = false;
 let playing = false;
 let paused = false;
-let mode = "idle"; // idle | intro | ready | segment
+let mode = "idle"; // idle | intro | ready | segment | final
 
 const audio = new Audio();
 const backgroundJingle = new Audio("jingle.mp3");
@@ -287,6 +287,23 @@ function nextSegment() {
   if (currentSegment < TOTAL_SEGMENTS) {
     currentSegment++;
     playSegment();
+  } else if (currentSegment === TOTAL_SEGMENTS) {
+    // After segment 30, play final.mp3
+    mode = "final";
+    currentSegment++; // Increment to prevent replay
+    updateProgress(); // Update progress bar to 100%
+    status.textContent = "🎄 Final message...";
+    
+    playAudio(
+      "final.mp3",
+      "final.mp3",
+      () => {
+        // After final.mp3 ends, resume background jingle
+        backgroundJingle.currentTime = 0;
+        backgroundJingle.play().catch(() => {});
+        status.textContent = "🎄 Thank you for playing!";
+      }
+    );
   }
 }
 

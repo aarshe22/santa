@@ -7,6 +7,8 @@ let paused = false;
 let mode = "idle"; // idle | intro | ready | segment
 
 const audio = new Audio();
+const backgroundJingle = new Audio("jingle.mp3");
+backgroundJingle.loop = true;
 
 /* DOM */
 const santa = document.getElementById("santa");
@@ -305,6 +307,10 @@ startBtn.onclick = () => {
   started = true;
   mode = "intro";
 
+  // Stop background jingle when game starts
+  backgroundJingle.pause();
+  backgroundJingle.currentTime = 0;
+
   startBtn.disabled = true;
   nextBtn.disabled = false;
   status.textContent = "🎅 Santa is explaining the rules…";
@@ -332,6 +338,24 @@ setSanta("santa-idle.png");
 captions.textContent = "";
 updateProgress();
 nextBtn.disabled = true;
+
+// Start background jingle on initial screen
+backgroundJingle.volume = 0.5; // Set volume to 50% so it's not too loud
+
+// Try to start jingle immediately
+backgroundJingle.play().catch(error => {
+  // Autoplay may be blocked, start on first user interaction
+  const startJingleOnInteraction = () => {
+    if (!started && backgroundJingle.paused) {
+      backgroundJingle.play().catch(() => {});
+      // Remove listeners after first interaction
+      document.removeEventListener('click', startJingleOnInteraction);
+      document.removeEventListener('touchstart', startJingleOnInteraction);
+    }
+  };
+  document.addEventListener('click', startJingleOnInteraction, { once: true });
+  document.addEventListener('touchstart', startJingleOnInteraction, { once: true });
+});
 
 /* ===============================
    SNOWFALL

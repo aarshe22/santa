@@ -89,11 +89,12 @@ button:disabled {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 33vh;
+  min-height: 0;
+  max-height: 40vh;
   padding: 18px 24px;
   box-sizing: border-box;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   text-align: center;
   background: rgba(0,0,0,0.72);
@@ -101,6 +102,11 @@ button:disabled {
   font-size: clamp(0.85rem, 1.6vw, 1.3rem);
   line-height: 1.4;
   z-index: 5;
+  overflow-y: auto;
+}
+
+#captions:empty {
+  display: none;
 }
 
 @media (max-width: 768px) {
